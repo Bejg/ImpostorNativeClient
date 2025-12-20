@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Keyboard, Animated, BackHandler } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Keyboard, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, layout } from '../styles/GlobalStyles';
+import ScreenHeader from '../components/ScreenHeader';
 
 const MIN_PLAYERS = 3;
 
@@ -15,16 +16,7 @@ const PlayersScreen = ({ players, setPlayers, onBack }) => {
       duration: 300,
       useNativeDriver: true,
     }).start();
-
-    // Obsługa przycisku wstecz na Androidzie
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      onBack();
-      return true; // Zatrzymaj domyślne zachowanie przycisku wstecz
-    });
-
-    // Usuń listener przy odmontowaniu komponentu
-    return () => backHandler.remove();
-  }, [fadeAnim, onBack]);
+  }, [fadeAnim]);
 
   const addPlayer = () => {
     if (newName.trim()) {
@@ -57,50 +49,44 @@ const PlayersScreen = ({ players, setPlayers, onBack }) => {
 
   return (
     <Animated.View style={[styles.screen, { opacity: fadeAnim }]}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={onBack}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Zarządzaj Graczami</Text>
-        <View style={styles.placeholder} /> {/* Placeholder for alignment */}
-      </View>
+      <ScreenHeader title="Zarządzaj Graczami" onBack={onBack}>
+        <View style={styles.container}>
+          <View style={styles.inputRow}>
+            <TextInput
+              style={styles.input}
+              placeholder="Imię gracza..."
+              placeholderTextColor={colors.textPlaceholder}
+              value={newName}
+              onChangeText={setNewName}
+              onSubmitEditing={addPlayer}
+              returnKeyType="done"
+            />
+            <TouchableOpacity style={styles.btnSmall} onPress={addPlayer}>
+              <Ionicons name="add" size={24} color={colors.text} />
+            </TouchableOpacity>
+          </View>
 
-      <View style={styles.container}>
-        <View style={styles.inputRow}>
-          <TextInput
-            style={styles.input}
-            placeholder="Imię gracza..."
-            placeholderTextColor={colors.textPlaceholder}
-            value={newName}
-            onChangeText={setNewName}
-            onSubmitEditing={addPlayer}
-            returnKeyType="done"
+          <FlatList
+            style={styles.playerList}
+            data={players}
+            renderItem={renderPlayer}
+            keyExtractor={(item, index) => `${item}-${index}`}
+            ListEmptyComponent={
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>Brak graczy. Dodaj pierwszego gracza!</Text>
+              </View>
+            }
           />
-          <TouchableOpacity style={styles.btnSmall} onPress={addPlayer}>
-            <Ionicons name="add" size={24} color={colors.text} />
-          </TouchableOpacity>
+
+          <Text style={styles.playerCount}>Liczba graczy: {players.length}</Text>
+
+          {players.length < MIN_PLAYERS && (
+            <Text style={styles.warningText}>
+              Potrzebujesz przynajmniej {MIN_PLAYERS} graczy, aby rozpocząć grę
+            </Text>
+          )}
         </View>
-
-        <FlatList
-          style={styles.playerList}
-          data={players}
-          renderItem={renderPlayer}
-          keyExtractor={(item, index) => `${item}-${index}`}
-          ListEmptyComponent={
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>Brak graczy. Dodaj pierwszego gracza!</Text>
-            </View>
-          }
-        />
-
-        <Text style={styles.playerCount}>Liczba graczy: {players.length}</Text>
-
-        {players.length < MIN_PLAYERS && (
-          <Text style={styles.warningText}>
-            Potrzebujesz przynajmniej {MIN_PLAYERS} graczy, aby rozpocząć grę
-          </Text>
-        )}
-      </View>
+      </ScreenHeader>
     </Animated.View>
   );
 };
@@ -110,30 +96,9 @@ const styles = StyleSheet.create({
     ...layout.screen,
     justifyContent: 'flex-start',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 15,
-    width: '100%',
-  },
-  backButton: {
-    padding: 5,
-  },
-  headerTitle: {
-    ...typography.h2,
-    flex: 1,
-    textAlign: 'center',
-    marginRight: 30, // To account for the back button
-  },
-  placeholder: {
-    width: 30, // Same width as the back button area
-  },
   container: {
     flex: 1,
     width: '100%',
-    paddingHorizontal: 20,
   },
   inputRow: {
     flexDirection: 'row',
