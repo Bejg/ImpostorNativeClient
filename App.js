@@ -12,38 +12,12 @@ import VotingScreen from './src/screens/VotingScreen';
 import ResultScreen from './src/screens/ResultScreen';
 import SplashScreen from './src/screens/SplashScreen';
 import BackButton from './src/components/BackButton';
-import PlayerRevealCard from './src/components/PlayerRevealCard';
+import VotingRevealCard from './src/components/VotingRevealCard';
+import InfoCard from './src/components/InfoCard';
 
 // TODO: Move this to a more appropriate configuration file
 const API_URL = 'https://impostorgame-nqz6.onrender.com'; // For iOS Simulator. Use http://10.0.2.2:3000 for Android Emulator.
 
-// --- Notification Component ---
-const Notification = ({ message, type, visible, onClose }) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: visible ? 1 : 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  }, [visible, fadeAnim]);
-
-  if (!visible) return null;
-
-  return (
-    <Animated.View style={[
-      styles.notificationContainer,
-      type === 'success' ? styles.successBg : (type === 'error' ? styles.errorBg : styles.infoBg),
-      { opacity: fadeAnim }
-    ]}>
-      <Text style={styles.notificationText}>{message}</Text>
-      <TouchableOpacity onPress={onClose}>
-        <Ionicons name="close" size={24} color={colors.text} />
-      </TouchableOpacity>
-    </Animated.View>
-  );
-};
 
 
 const MIN_PLAYERS = 3;
@@ -96,8 +70,9 @@ export default function App() {
     startingPlayerName: ''
   });
 
-  // Notification State
-  const [notification, setNotification] = useState({ message: '', type: '', visible: false });
+  // Notification State (now using InfoCard)
+  const [infoCardVisible, setInfoCardVisible] = useState(false);
+  const [infoCardData, setInfoCardData] = useState({ title: '', message: '', type: 'info' });
 
   // Player Reveal Card State
   const [revealCardVisible, setRevealCardVisible] = useState(false);
@@ -118,27 +93,20 @@ export default function App() {
     }
   }, [playersList]);
 
-  const showNotification = useCallback((message, type = 'info', duration = 3000) => {
-    setNotification({ message, type, visible: true });
-    if (duration > 0) {
-      setTimeout(() => {
-        setNotification(prev => ({ ...prev, visible: false }));
-      }, duration);
-    }
-  }, []);
-
-  const hideNotification = useCallback(() => {
-    setNotification(prev => ({ ...prev, visible: false }));
+  const showInfoCard = useCallback((message, type = 'info', title = null) => {
+    const cardTitle = title || (type === 'error' ? 'Błąd' : type === 'success' ? 'Sukces' : 'Informacja');
+    setInfoCardData({ message, type, title: cardTitle });
+    setInfoCardVisible(true);
   }, []);
 
 
   const startGame = async () => {
     if (playersList.length < MIN_PLAYERS) {
-      showNotification(`Wymagane jest minimum ${MIN_PLAYERS} graczy.`, 'error');
+      showInfoCard(`Wymagane jest minimum ${MIN_PLAYERS} graczy.`, 'error');
       return;
     }
     if (impostorCount >= playersList.length) {
-      showNotification("Liczba Impostorów musi być mniejsza niż liczba graczy.", 'error');
+      showInfoCard("Liczba Impostorów musi być mniejsza niż liczba graczy.", 'error');
       return;
     }
 
@@ -183,7 +151,7 @@ export default function App() {
       setGameState('reveal');
 
     } catch (error) {
-      showNotification(error.message, 'error');
+      showInfoCard(error.message, 'error');
     }
   };
 
@@ -249,7 +217,7 @@ export default function App() {
 
   const handleDeleteWord = async () => {
     if (!gameData.wordId) {
-      showNotification("Nie można usunąć słowa, ID nieznane.", 'error');
+      showInfoCard("Nie można usunąć słowa, ID nieznane.", 'error');
       return false;
     }
   
@@ -262,10 +230,10 @@ export default function App() {
         throw new Error(`Błąd serwera`);
       }
   
-      showNotification(`Słowo "${gameData.secretWord}" usunięte.`, 'success');
+      showInfoCard(`Słowo "${gameData.secretWord}" usunięte.`, 'success');
       return true;
     } catch (error) {
-      showNotification(`Nie udało się usunąć słowa. Błąd: ${error.message}`, 'error');
+      showInfoCard(`Nie udało się usunąć słowa. Błąd: ${error.message}`, 'error');
       return false;
     }
   };
@@ -278,7 +246,7 @@ export default function App() {
 
   const handleAddWord = async (word, hint) => {
     if (!word || !hint) {
-      showNotification("Słowo i podpowiedź nie mogą być puste.", 'error');
+      showInfoCard("Słowo i podpowiedź nie mogą być puste.", 'error');
       return false;
     }
 
@@ -295,10 +263,10 @@ export default function App() {
       }
 
       const result = await response.json();
-      showNotification(`Słowo "${result.item.word}" dodane!`, 'success');
+      showInfoCard(`Słowo "${result.item.word}" dodane!`, 'success');
       return true;
     } catch (error) {
-      showNotification(`Nie udało się dodać słowa: ${error.message}`, 'error');
+      showInfoCard(`Nie udało się dodać słowa: ${error.message}`, 'error');
       return false;
     }
   };
@@ -316,12 +284,6 @@ export default function App() {
   return (
     <LinearGradient colors={colors.background} style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <Notification
-        message={notification.message}
-        type={notification.type}
-        visible={notification.visible}
-        onClose={hideNotification}
-      />
       <SafeAreaView style={styles.safeArea}>
         {['reveal', 'game', 'voting', 'result'].includes(gameState) && (
           <BackButton onPress={onRestart} />
@@ -380,7 +342,15 @@ export default function App() {
           />
         )}
 
-        <PlayerRevealCard
+        <InfoCard
+          visible={infoCardVisible}
+          title={infoCardData.title}
+          message={infoCardData.message}
+          type={infoCardData.type}
+          onOkPress={() => setInfoCardVisible(false)}
+        />
+
+        <VotingRevealCard
           visible={revealCardVisible}
           player={revealedPlayer}
           onOkPress={() => {

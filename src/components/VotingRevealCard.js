@@ -2,9 +2,9 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Dimensions } from 'react-native';
 import { colors, typography } from '../styles/GlobalStyles';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-const PlayerRevealCard = ({ visible, player, onOkPress }) => {
+const VotingRevealCard = ({ visible, player, onOkPress }) => {
   if (!visible || !player) return null;
 
   return (
@@ -41,7 +41,7 @@ const PlayerRevealCard = ({ visible, player, onOkPress }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: colors.background[1],
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -52,8 +52,8 @@ const styles = StyleSheet.create({
     padding: 25,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 15,
   },
@@ -91,7 +91,8 @@ const styles = StyleSheet.create({
     color: colors.danger,
   },
   citizenRole: {
-    color: colors.text,
+    backgroundColor: colors.successTransparent,
+    color: colors.success,
   },
   okButton: {
     backgroundColor: colors.primary,
@@ -108,4 +109,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PlayerRevealCard;
+export default VotingRevealCard;
