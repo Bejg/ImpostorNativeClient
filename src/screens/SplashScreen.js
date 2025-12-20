@@ -45,13 +45,13 @@ const SplashScreen = ({ onHealthCheckComplete, apiUrl }) => {
       <LinearGradient colors={colors.background} style={styles.container}>
         <View style={styles.content}>
           <Text style={styles.logo}>IMPOSTOR</Text>
-          <Text style={styles.title}>Ładowanie gry...</Text>
+          <Text style={styles.title}>Ładowanie...</Text>
           <ActivityIndicator size="large" color={colors.primary} style={styles.spinner} />
           
           {connectionStatus === 'disconnected' && (
             <View style={styles.disconnectedContainer}>
                           <Text style={styles.retryText}>
-                            Próba połączenia z serwrem gry...
+                            Próba połączenia z serwrem gry
                           </Text>
                         </View>          )}
         </View>

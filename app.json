@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "ImpostorMobile",
-    "slug": "ImpostorMobile",
-    "version": "1.0.0",
+    "name": "Impostor",
+    "slug": "Impostor",
+    "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -18,10 +18,10 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1a1a2e"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.bejq.ImpostorMobile"
+      "package": "com.bejq.impostor"
     },
     "web": {
       "favicon": "./assets/favicon.png"
