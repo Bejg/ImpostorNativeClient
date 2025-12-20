@@ -45,7 +45,7 @@ const GameScreen = ({ category, starter, onVote }) => {
             </View>
             
             <TouchableOpacity style={styles.btnVote} onPress={onVote}>
-                <Text style={styles.btnVoteText}>ZAKOŃCZ I GŁOSUJ</Text>
+                <Text style={styles.btnVoteText}>GŁOSUJ</Text>
             </TouchableOpacity>
         </Animated.View>
     );

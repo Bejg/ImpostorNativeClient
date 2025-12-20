@@ -12,6 +12,7 @@ import VotingScreen from './src/screens/VotingScreen';
 import ResultScreen from './src/screens/ResultScreen';
 import SplashScreen from './src/screens/SplashScreen';
 import BackButton from './src/components/BackButton';
+import PlayerRevealCard from './src/components/PlayerRevealCard';
 
 // TODO: Move this to a more appropriate configuration file
 const API_URL = 'https://impostorgame-nqz6.onrender.com'; // For iOS Simulator. Use http://10.0.2.2:3000 for Android Emulator.
@@ -97,6 +98,10 @@ export default function App() {
 
   // Notification State
   const [notification, setNotification] = useState({ message: '', type: '', visible: false });
+
+  // Player Reveal Card State
+  const [revealCardVisible, setRevealCardVisible] = useState(false);
+  const [revealedPlayer, setRevealedPlayer] = useState(null);
 
   // Zapisz graczy do pamięci, gdy lista się zmieni
   useEffect(() => {
@@ -227,18 +232,18 @@ export default function App() {
 
   const handleVote = (votedPlayerId) => {
     const votedPlayer = gameData.players.find(p => p.id === votedPlayerId);
-    
-    const updatedPlayers = gameData.players.map(p => 
+
+    const updatedPlayers = gameData.players.map(p =>
       p.id === votedPlayerId ? { ...p, isEliminated: true } : p
     );
 
     setGameData(prev => ({ ...prev, players: updatedPlayers }));
-    
+
     const gameEnded = checkWinCondition(updatedPlayers);
 
     if (!gameEnded) {
-        showNotification(`${votedPlayer.name} był ${votedPlayer.role === 'Impostor' ? 'Impostorem' : 'Obywatelem'}`, 'info');
-        setGameState('game');
+        setRevealedPlayer(votedPlayer);
+        setRevealCardVisible(true);
     }
   };
 
@@ -374,6 +379,15 @@ export default function App() {
             onRestart={onRestart}
           />
         )}
+
+        <PlayerRevealCard
+          visible={revealCardVisible}
+          player={revealedPlayer}
+          onOkPress={() => {
+            setRevealCardVisible(false);
+            setGameState('game');
+          }}
+        />
       </SafeAreaView>
     </LinearGradient>
   );
