@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, BackHandler } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, typography } from '../styles/GlobalStyles';
+import { colors, spacing, typography } from '../styles/GlobalStyles';
 
 const ScreenHeader = ({ title, onBack, children }) => {
   useEffect(() => {
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     width: '100%',
-    paddingHorizontal: 20,
+    paddingTop: spacing.md,
   },
 });
 

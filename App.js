@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, StatusBar, Modal, TouchableOpacity, Animated } from 'react-native';
+import { StyleSheet, View, Text, StatusBar, Modal, TouchableOpacity, Animated, BackHandler, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -97,6 +97,40 @@ export default function App() {
       savePlayers();
     }
   }, [playersList]);
+
+  // Obsługa przycisku wstecz na Androidzie - pokazuje dialog potwierdzenia
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      // Definiujemy ekran, na których powinien działać wewnętrzny przycisk wstecz
+      const screensWithBackButton = ['players', 'settingsOption', 'add-word'];
+
+      // Jeśli jesteśmy na ekranie z wewnętrzny przyciskiem wstecz, nie kończ aplikacji
+      if (screensWithBackButton.includes(currentScreen)) {
+        return false;
+      }
+      // W przeciwnym przypadku, jeśli jesteśmy w głównym przepływie aplikacji, pokaż dialog potwierdzenia
+      else {
+        Alert.alert(
+          'Zamknij aplikację',
+          'Czy na pewno chcesz wyjść z aplikacji?',
+          [
+            {
+              text: 'Nie',
+              style: 'cancel'
+            },
+            {
+              text: 'Tak',
+              onPress: () => BackHandler.exitApp()
+            }
+          ],
+          { cancelable: false }
+        );
+        return true; // Zatrzymaj domyślne zachowanie przycisku wstecz
+      }
+    });
+
+    return () => backHandler.remove();
+  }, [gameState, currentScreen]);
 
   const showInfoCard = useCallback((message, type = 'info', title = null) => {
     const cardTitle = title || (type === 'error' ? 'Błąd' : type === 'success' ? 'Sukces' : 'Informacja');
