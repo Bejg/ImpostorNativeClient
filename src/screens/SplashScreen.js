@@ -1,78 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, typography, layout } from '../styles/GlobalStyles';
+import { colors, typography, layout, spacing, components } from '../styles/GlobalStyles';
 
 const SplashScreen = ({ onHealthCheckComplete, apiUrl }) => {
   const [connectionStatus, setConnectionStatus] = useState('checking'); // 'checking', 'connected', 'disconnected'
-  const [retryCount, setRetryCount] = useState(0);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  const checkHealth = async () => {
+  const checkHealth = useCallback(async () => {
+    setConnectionStatus('checking');
     try {
       const response = await fetch(`${apiUrl}/health`);
       if (response.ok) {
-        // Sprawdź typ odpowiedzi, aby uniknąć błędów parsowania
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          const data = await response.json();
-          if (data.status === 'OK') {
-            setConnectionStatus('connected');
-            setTimeout(() => {
-              onHealthCheckComplete(true);
-            }, 1000); // Mała opóźnienie dla lepszego efektu wizualnego
-            return true;
-          }
-        } else {
-          // Jeśli odpowiedź nie jest JSON, ale status OK, uznajemy za połączone
-          setConnectionStatus('connected');
-          setTimeout(() => {
-            onHealthCheckComplete(true);
-          }, 1000);
-          return true;
-        }
+        setConnectionStatus('connected');
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }).start(() => onHealthCheckComplete(true));
+        return true;
       }
     } catch (error) {
       console.error('Błąd podczas sprawdzania health check:', error);
     }
-
     setConnectionStatus('disconnected');
     return false;
-  };
+  }, [apiUrl, onHealthCheckComplete, fadeAnim]);
 
   useEffect(() => {
     const initialCheck = async () => {
       const success = await checkHealth();
       if (!success) {
-        // Rozpocznij cykliczne sprawdzanie co 7 sekund
         const interval = setInterval(async () => {
-          setRetryCount(prev => prev + 1);
-          const success = await checkHealth();
-          if (success) {
-            clearInterval(interval);
-          }
+          await checkHealth();
         }, 7000);
-
-        // Wyczyść interwał przy odmontowaniu komponentu
         return () => clearInterval(interval);
       }
     };
-
     initialCheck();
-  }, []);
+  }, [checkHealth]);
 
   return (
-    <LinearGradient colors={colors.background} style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Ładowanie gry...</Text>
-        <ActivityIndicator size="large" color={colors.primary} style={styles.spinner} />
-        
-        {connectionStatus === 'disconnected' && (
-          <Text style={styles.retryText}>
-            Próba ponownego łączenia z serwerem gry. (Próba: {retryCount + 1})
-          </Text>
-        )}
-      </View>
-    </LinearGradient>
+    <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+      <LinearGradient colors={colors.background} style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.logo}>IMPOSTOR</Text>
+          <Text style={styles.title}>Ładowanie gry...</Text>
+          <ActivityIndicator size="large" color={colors.primary} style={styles.spinner} />
+          
+          {connectionStatus === 'disconnected' && (
+            <View style={styles.disconnectedContainer}>
+                          <Text style={styles.retryText}>
+                            Próba połączenia z serwrem gry...
+                          </Text>
+                        </View>          )}
+        </View>
+      </LinearGradient>
+    </Animated.View>
   );
 };
 
@@ -84,22 +68,33 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.lg,
+  },
+  logo: {
+    ...typography.h1,
+    fontSize: 48,
+    marginBottom: spacing.xl,
+    color: colors.primary,
   },
   title: {
-    ...typography.h1,
+    ...typography.h2,
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: spacing.lg,
   },
   spinner: {
-    marginVertical: 20,
+    marginVertical: spacing.xl,
+  },
+  disconnectedContainer: {
+    alignItems: 'center',
+    marginTop: spacing.xl,
   },
   retryText: {
     ...typography.p,
     textAlign: 'center',
-    color: colors.warning,
-    marginTop: 10,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
   },
+
 });
 
 export default SplashScreen;

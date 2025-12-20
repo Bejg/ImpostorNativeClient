@@ -1,0 +1,62 @@
+  1. Globalny System Designu (GlobalStyles.js)
+
+  Twój plik GlobalStyles.js to świetny początek, ale można go znacznie ulepszyć, co przełoży się na spójność i łatwość utrzymania całej aplikacji.
+
+   * Problem: Generyczna czcionka. Użycie 'sans-serif' jest zbyt ogólne.
+       * Sugestia: Wybierz konkretną, darmową czcionkę z Google Fonts (np. Montserrat, Lato, Poppins). Nada to aplikacji unikalny charakter. Czcionkę można
+         łatwo dodać do projektu Expo.
+   * Problem: Ograniczona hierarchia typografii. Brakuje stylów dla mniejszych nagłówków i różnych wariantów tekstu.
+       * Sugestia: Rozbuduj obiekt typography o style h3, body, caption, buttonText itp.
+   * Problem: "Magiczne liczby" (Hardcoded values). Wartości takie jak fontSize: 28 czy marginBottom: 12 są trudne do zarządzania.
+       * Sugestia: Zdefiniuj jednostkę bazową (np. const BASE_UNIT = 8;) i używaj jej wielokrotności dla wszystkich wymiarów, marginesów i paddingów (np.
+         padding: BASE_UNIT * 2). To zapewni wizualną harmonię.
+   * Problem: Niespójne nazewnictwo kolorów i stylów. Nazwy card i cardItem są mylące.
+       * Sugestia: Używaj bardziej opisowych nazw, np. colors.cardBackground, colors.inputBackground. Oddziel definicje kolorów od definicji komponentów.
+   * Problem: Brak globalnych stylów dla komponentów. Style dla przycisków, inputów itp. są powielane w każdym pliku.
+       * Sugestia: Stwórz w GlobalStyles.js obiekt components, który będzie zawierał reużywalne style dla button, input, card itp. w różnych wariantach (np.
+         button.primary, button.secondary).
+
+  ---
+
+  2. Spójność i reużywalność komponentów
+
+   * Problem: Powielanie kodu stylów. Każdy ekran definiuje własne style dla przycisków i inputów, co prowadzi do niespójności.
+       * Sugestia: Stwórz reużywalne komponenty, np. <StyledButton variant="primary" />, <StyledInput />, które będą korzystać z globalnych stylów. To
+         najważniejsza zmiana, która podniesie jakość kodu.
+   * Problem: Komponent `Notification` w `App.js`. Logika i widok notyfikacji są w głównym pliku aplikacji.
+       * Sugestia: Przenieś komponent Notification do osobnego pliku w src/components/, aby App.js był czystszy.
+   * Problem: Pozycjonowanie `BackButton`. Przycisk jest pozycjonowany absolutnie z right: 0, co może powodować nakładanie się na inne elementy i wyglądać
+     nieestetycznie.
+       * Sugestia: Zamiast pozycjonowania absolutnego w komponencie, dodaj go do layoutu ekranu w App.js w taki sposób, aby był częścią przepływu (np. w
+         nagłówku). Jeśli musi być absolutny, dodaj margines od krawędzi (np. right: 16, top: 16).
+
+  ---
+
+  3. Doświadczenie Użytkownika (UX) i Interakcje
+
+   * Problem: Brak potwierdzenia przy kluczowych akcjach. Usunięcie słowa (ResultScreen) i głosowanie na gracza (VotingScreen) odbywa się natychmiast po
+     kliknięciu.
+       * Sugestia: Dodaj modal z prośbą o potwierdzenie ("Czy na pewno chcesz usunąć to słowo?"). Zapobiegnie to przypadkowym, nieodwracalnym akcjom.
+   * Problem: Nagłe przejścia między ekranami. Przejścia są często natychmiastowe, co może być dezorientujące.
+       * Sugestia: Używaj animacji przejść (np. fade-out przed zmianą ekranu). W RevealScreen zamiast setTimeout użyj callbacka animacji, aby zapewnić płynne
+         przejście po jej zakończeniu.
+   * Problem: Brak informacji o pustym stanie. Na SetupScreen pusta lista graczy jest po prostu... pusta.
+       * Sugestia: Dodaj do FlatList właściwość ListEmptyComponent, która wyświetli komunikat, np. "Brak graczy. Dodaj kogoś, aby rozpocząć.".
+   * Problem: Brak możliwości manualnego odświeżenia na `SplashScreen`. W przypadku braku połączenia, użytkownik jest zablokowany.
+       * Sugestia: Dodaj przycisk "Spróbuj ponownie".
+   * Problem: Walidacja inputów. Można dodać graczy o tej samej nazwie.
+       * Sugestia: Dodaj walidację unikalności nazw graczy na SetupScreen.
+
+  ---
+
+  4. Drobne Poprawki Wizualne i Techniczne
+   * Problem: Błąd w kodzie `SplashScreen`. Użycie setRetryCount bez zdefiniowania stanu retryCount spowoduje awarię aplikacji.
+       * Sugestia: Należy to natychmiast naprawić, dodając const [retryCount, setRetryCount] = useState(0);.
+   * Problem: Użycie "X" jako ikony. Tekstowy "X" w BackButton wygląda nieprofesjonalnie.
+       * Sugestia: Użyj biblioteki ikon (np. expo-icons) lub stwórz własną ikonę "X" za pomocą stylizowanych View.
+   * Problem: Dostępność (Accessibility). Przyciski-ikony, jak BackButton, powinny mieć etykiety dla czytników ekranu.
+       * Sugestia: Dodaj accessibilityLabel do wszystkich TouchableOpacity, które nie mają czytelnego tekstu, np. accessibilityLabel="Zamknij".
+   * Problem: Twardo zakodowane wartości kolorów. W ResultScreen dla nieaktywnego przycisku użyto #888.
+       * SugestGłosujestia: Zawsze używaj kolorów zdefiniowanych w GlobalStyles.js, np. colors.inactive.
+   * Problem: Zduplikowany `flex: 1` na `SetupScreen`.
+       * Sugestia: Usuń zbędny flex: 1 z wewnętrznego View.

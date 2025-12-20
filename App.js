@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, StatusBar, SafeAreaView, Modal, TouchableOpacity, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFonts, Montserrat_400Regular, Montserrat_600SemiBold, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
 import { colors, layout } from './src/styles/GlobalStyles';
 import SetupScreen from './src/screens/SetupScreen';
 import AddWordScreen from './src/screens/AddWordScreen';
@@ -10,6 +11,7 @@ import GameScreen from './src/screens/GameScreen';
 import VotingScreen from './src/screens/VotingScreen';
 import ResultScreen from './src/screens/ResultScreen';
 import SplashScreen from './src/screens/SplashScreen';
+import BackButton from './src/components/BackButton';
 
 // TODO: Move this to a more appropriate configuration file
 const API_URL = 'https://impostorgame-nqz6.onrender.com'; // For iOS Simulator. Use http://10.0.2.2:3000 for Android Emulator.
@@ -36,7 +38,7 @@ const Notification = ({ message, type, visible, onClose }) => {
     ]}>
       <Text style={styles.notificationText}>{message}</Text>
       <TouchableOpacity onPress={onClose}>
-        <Text style={styles.notificationClose}>&times;</Text>
+        <Ionicons name="close" size={24} color={colors.text} />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -47,6 +49,11 @@ const MIN_PLAYERS = 3;
 
 // ... (previous code) ...
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Montserrat_400Regular,
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
+  });
   const [gameState, setGameState] = useState('setup');
   const [currentScreen, setCurrentScreen] = useState('setup');
   const [playersList, setPlayersList] = useState([]);
@@ -292,7 +299,7 @@ export default function App() {
   };
 
 
-  if (showSplash) {
+  if (!fontsLoaded || showSplash) {
     return (
       <SplashScreen
         onHealthCheckComplete={handleHealthCheckComplete}
@@ -311,6 +318,9 @@ export default function App() {
         onClose={hideNotification}
       />
       <SafeAreaView style={styles.safeArea}>
+        {['reveal', 'game', 'voting', 'result'].includes(gameState) && (
+          <BackButton onPress={onRestart} />
+        )}
         {gameState === 'setup' && currentScreen === 'setup' && (
           <SetupScreen
             players={playersList}

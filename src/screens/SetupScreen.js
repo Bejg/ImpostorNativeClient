@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Keyboard, Animated } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import { colors, typography, layout } from '../styles/GlobalStyles';
 
@@ -45,7 +46,7 @@ const SetupScreen = ({ players, setPlayers, impostorCount, setImpostorCount, onS
     <View style={styles.playerListItem}>
       <Text style={styles.playerListItemText}>{item}</Text>
       <TouchableOpacity style={styles.btnRemove} onPress={() => removePlayer(index)}>
-        <Text style={styles.btnRemoveText}>×</Text>
+        <Ionicons name="close" size={24} color={colors.text} />
       </TouchableOpacity>
     </View>
   );
@@ -64,7 +65,7 @@ const SetupScreen = ({ players, setPlayers, impostorCount, setImpostorCount, onS
             onSubmitEditing={addPlayer}
           />
           <TouchableOpacity style={styles.btnSmall} onPress={addPlayer}>
-            <Text style={styles.btnText}>Dodaj</Text>
+            <Ionicons name="add" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
         <FlatList
