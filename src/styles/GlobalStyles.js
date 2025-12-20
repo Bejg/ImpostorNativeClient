@@ -62,7 +62,6 @@ export const typography = {
 export const layout = {
   container: {
     flex: 1,
-    padding: 20,
   },
   screen: {
     flex: 1,

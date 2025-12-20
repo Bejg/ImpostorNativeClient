@@ -12,6 +12,8 @@ import GameScreen from './src/screens/GameScreen';
 import VotingScreen from './src/screens/VotingScreen';
 import ResultScreen from './src/screens/ResultScreen';
 import SplashScreen from './src/screens/SplashScreen';
+import PlayersScreen from './src/screens/PlayersScreen';
+import SettingsOptionScreen from './src/screens/SettingsOptionScreen';
 import BackButton from './src/components/BackButton';
 import VotingRevealCard from './src/components/VotingRevealCard';
 import InfoCard from './src/components/InfoCard';
@@ -32,6 +34,8 @@ export default function App() {
   });
   const [gameState, setGameState] = useState('setup');
   const [currentScreen, setCurrentScreen] = useState('setup');
+  const [gameScreen, setGameScreen] = useState('setup'); // Dodajemy osobny stan dla ekranów gry
+  const [settingsOption, setSettingsOption] = useState(null); // Dodajemy stan do śledzenia aktywnej opcji ustawień
   const [playersList, setPlayersList] = useState([]);
   const [impostorCount, setImpostorCount] = useState(1);
   const [showSplash, setShowSplash] = useState(true);
@@ -162,6 +166,29 @@ export default function App() {
   };
 
   const navigateToSetup = () => {
+    setCurrentScreen('setup');
+  };
+
+  const navigateToPlayers = () => {
+    setCurrentScreen('players');
+  };
+
+  const navigateToGameMode = () => {
+    setSettingsOption('gameMode');
+    setCurrentScreen('settingsOption');
+  };
+
+  const navigateToCategories = () => {
+    setSettingsOption('categories');
+    setCurrentScreen('settingsOption');
+  };
+
+  const navigateBackToSetup = () => {
+    setCurrentScreen('setup');
+    setSettingsOption(null);
+  };
+
+  const navigateBackToSettings = () => {
     setCurrentScreen('setup');
   };
 
@@ -297,6 +324,9 @@ export default function App() {
             setImpostorCount={setImpostorCount}
             onStart={startGame}
             onNavigateToAddWord={navigateToAddWord}
+            onNavigateToPlayers={navigateToPlayers}
+            onNavigateToGameMode={navigateToGameMode}
+            onNavigateToCategories={navigateToCategories}
           />
         )}
 
@@ -305,6 +335,25 @@ export default function App() {
               onAddWord={handleAddWord}
               onBack={navigateToSetup}
            />
+        )}
+
+        {gameState === 'setup' && currentScreen === 'players' && (
+          <PlayersScreen
+            players={playersList}
+            setPlayers={setPlayersList}
+            onBack={navigateBackToSetup}
+          />
+        )}
+
+        {gameState === 'setup' && currentScreen === 'settingsOption' && settingsOption && (
+          <SettingsOptionScreen
+            title={
+              settingsOption === 'gameMode' ? 'Tryb gry' :
+              settingsOption === 'categories' ? 'Kategorie' :
+              'Ustawienia'
+            }
+            onBack={navigateBackToSettings}
+          />
         )}
 
         {gameState === 'reveal' && (
