@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Keyboard, Animated } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Keyboard, Animated, BackHandler } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, layout } from '../styles/GlobalStyles';
 
@@ -9,13 +9,22 @@ const PlayersScreen = ({ players, setPlayers, onBack }) => {
   const [newName, setNewName] = useState('');
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  React.useEffect(() => {
+  useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 300,
       useNativeDriver: true,
     }).start();
-  }, [fadeAnim]);
+
+    // Obsługa przycisku wstecz na Androidzie
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      onBack();
+      return true; // Zatrzymaj domyślne zachowanie przycisku wstecz
+    });
+
+    // Usuń listener przy odmontowaniu komponentu
+    return () => backHandler.remove();
+  }, [fadeAnim, onBack]);
 
   const addPlayer = () => {
     if (newName.trim()) {
@@ -48,10 +57,16 @@ const PlayersScreen = ({ players, setPlayers, onBack }) => {
 
   return (
     <Animated.View style={[styles.screen, { opacity: fadeAnim }]}>
-      <Text style={typography.h1}>Zarządzaj Graczami</Text>
-      
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={onBack}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Zarządzaj Graczami</Text>
+        <View style={styles.placeholder} /> {/* Placeholder for alignment */}
+      </View>
+
       <View style={styles.container}>
-        <View style={[styles.inputRow, { paddingHorizontal: 20 }]}>
+        <View style={styles.inputRow}>
           <TextInput
             style={styles.input}
             placeholder="Imię gracza..."
@@ -65,31 +80,26 @@ const PlayersScreen = ({ players, setPlayers, onBack }) => {
             <Ionicons name="add" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
-        
+
         <FlatList
           style={styles.playerList}
-          contentContainerStyle={{ paddingHorizontal: 20 }}
           data={players}
           renderItem={renderPlayer}
           keyExtractor={(item, index) => `${item}-${index}`}
           ListEmptyComponent={
-            <View style={[styles.emptyState, { paddingHorizontal: 20 }]}>
+            <View style={styles.emptyState}>
               <Text style={styles.emptyStateText}>Brak graczy. Dodaj pierwszego gracza!</Text>
             </View>
           }
         />
-        
-        <Text style={[styles.playerCount, { paddingHorizontal: 20 }]}>Liczba graczy: {players.length}</Text>
+
+        <Text style={styles.playerCount}>Liczba graczy: {players.length}</Text>
 
         {players.length < MIN_PLAYERS && (
-          <Text style={[styles.warningText, { paddingHorizontal: 20, textAlign: 'center' }]}>
+          <Text style={styles.warningText}>
             Potrzebujesz przynajmniej {MIN_PLAYERS} graczy, aby rozpocząć grę
           </Text>
         )}
-        
-        <TouchableOpacity style={[styles.btn, styles.btnSecondary, { marginHorizontal: 20 }]} onPress={onBack}>
-          <Text style={styles.btnText}>Powrót</Text>
-        </TouchableOpacity>
       </View>
     </Animated.View>
   );
@@ -98,11 +108,32 @@ const PlayersScreen = ({ players, setPlayers, onBack }) => {
 const styles = StyleSheet.create({
   screen: {
     ...layout.screen,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 15,
+    width: '100%',
+  },
+  backButton: {
+    padding: 5,
+  },
+  headerTitle: {
+    ...typography.h2,
+    flex: 1,
+    textAlign: 'center',
+    marginRight: 30, // To account for the back button
+  },
+  placeholder: {
+    width: 30, // Same width as the back button area
   },
   container: {
     flex: 1,
     width: '100%',
+    paddingHorizontal: 20,
   },
   inputRow: {
     flexDirection: 'row',
@@ -120,6 +151,51 @@ const styles = StyleSheet.create({
     color: colors.text,
     flexGrow: 1,
     height: 50,
+  },
+  playerList: {
+    flexGrow: 1,
+    marginBottom: 20,
+    width: '100%',
+  },
+  playerListItem: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  playerListItemText: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '600',
+    flex: 1,
+  },
+  settingsRow: {
+    alignItems: 'stretch',
+    marginVertical: 20,
+    paddingHorizontal: 10,
+  },
+  label: {
+    ...typography.h2,
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  buttonGroup: {
+    marginTop: 20,
+    gap: 10,
   },
   playerList: {
     flexGrow: 1,
