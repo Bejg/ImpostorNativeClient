@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   roleCardImpostor: {
-    backgroundColor: colors.dangerTransparent,
+    backgroundColor: colors.cardInput,
     borderColor: colors.danger,
   },
   tapHint: {

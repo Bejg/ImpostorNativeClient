@@ -18,7 +18,7 @@ const SettingsOptionScreen = ({ title, onBack }) => {
     <Animated.View style={[styles.screen, { opacity: fadeAnim }]}>
       <ScreenHeader title={title} onBack={onBack}>
         <View style={styles.content}>
-          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.title}>{typeof title === 'string' ? title : String(title)}</Text>
           <Text style={styles.message}>Opcja wdrożona wkrótce...</Text>
         </View>
       </ScreenHeader>

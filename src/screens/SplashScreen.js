@@ -21,7 +21,7 @@ const SplashScreen = ({ onHealthCheckComplete, apiUrl }) => {
         return true;
       }
     } catch (error) {
-      console.error('Błąd podczas sprawdzania health check:', error);
+      console.error('Błąd podczas sprawdzania health check: ', error);
     }
     setConnectionStatus('disconnected');
     return false;

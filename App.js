@@ -19,7 +19,7 @@ import VotingRevealCard from './src/components/VotingRevealCard';
 import InfoCard from './src/components/InfoCard';
 
 // TODO: Move this to a more appropriate configuration file
-const API_URL = 'https://impostorgame-nqz6.onrender.com'; // For iOS Simulator. Use http://10.0.2.2:3000 for Android Emulator.
+const API_URL = 'https://impostor.bqhost.ovh/api';
 
 
 
@@ -105,6 +105,8 @@ export default function App() {
       const screensWithBackButton = ['players', 'settingsOption', 'add-word'];
 
       // Jeśli jesteśmy na ekranie z wewnętrzny przyciskiem wstecz, nie kończ aplikacji
+      // W ScreenHeader jest już obsługa przycisku wstecz, więc zwracamy false,
+      // aby nie powodować konfliktu z główną obsługą
       if (screensWithBackButton.includes(currentScreen)) {
         return false;
       }
@@ -132,12 +134,12 @@ export default function App() {
     return () => backHandler.remove();
   }, [gameState, currentScreen]);
 
+
   const showInfoCard = useCallback((message, type = 'info', title = null) => {
     const cardTitle = title || (type === 'error' ? 'Błąd' : type === 'success' ? 'Sukces' : 'Informacja');
     setInfoCardData({ message, type, title: cardTitle });
     setInfoCardVisible(true);
   }, []);
-
 
   const startGame = async () => {
     if (playersList.length < MIN_PLAYERS) {
@@ -151,6 +153,7 @@ export default function App() {
 
     try {
       const response = await fetch(`${API_URL}/random`);
+      console.log('Response from /random:', response);  
       if (!response.ok) throw new Error("Błąd pobierania słowa");
       const selectedItem = await response.json();
 
@@ -191,6 +194,7 @@ export default function App() {
 
     } catch (error) {
       showInfoCard(error.message, 'error');
+      console.error('Błąd podczas rozpoczynania gry:', error );
     }
   };
 
@@ -384,6 +388,7 @@ export default function App() {
             title={
               settingsOption === 'gameMode' ? 'Tryb gry' :
               settingsOption === 'categories' ? 'Kategorie' :
+              typeof settingsOption === 'string' && settingsOption !== 'gameMode' && settingsOption !== 'categories' ? settingsOption :
               'Ustawienia'
             }
             onBack={navigateBackToSettings}

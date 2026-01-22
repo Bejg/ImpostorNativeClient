@@ -21,8 +21,8 @@ const ScreenHeader = ({ title, onBack, children }) => {
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{title}</Text>
-        <View style={styles.placeholder} /> {/* Placeholder for alignment */}
+        <Text style={styles.headerTitle}>{typeof title === 'string' ? title : String(title)}</Text>
+        <View style={styles.placeholder} />
       </View>
       <View style={styles.content}>
         {children}
@@ -52,14 +52,15 @@ const styles = StyleSheet.create({
     ...typography.h2,
     flex: 1,
     textAlign: 'center',
-    marginRight: 30, // To account for the back button
+    marginRight: 30,
   },
   placeholder: {
-    width: 30, // Same width as the back button area
+    width: 30,
   },
   content: {
     flex: 1,
     width: '100%',
+    paddingHorizontal: spacing.sm,
     paddingTop: spacing.md,
   },
 });

@@ -16,8 +16,8 @@ const BackButton = ({ onPress }) => (
 const styles = StyleSheet.create({
   button: {
     position: 'absolute',
-    top: spacing.lg,
-    right: spacing.sm,
+    top: 50,
+    right: spacing.xs,
     width: 40,
     height: 40,
     zIndex: zIndices.notification, // Using notification zIndex for now

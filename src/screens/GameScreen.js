@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
-import { colors, typography, layout, components } from '../styles/GlobalStyles';
+import { colors, typography, layout, components, spacing } from '../styles/GlobalStyles';
 
 const GameScreen = ({ category, starter, onVote }) => {
     const [seconds, setSeconds] = useState(300);
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     categoryText: {
         ...typography.h2,
         color: colors.primary,
-        marginTop: 5,
+        marginTop: spacing.md,
     },
     timer: {
         fontSize: 56,
