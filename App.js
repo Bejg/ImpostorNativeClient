@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, StatusBar, Modal, TouchableOpacity, Animated, BackHandler, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts, Montserrat_400Regular, Montserrat_600SemiBold, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
@@ -348,107 +348,109 @@ export default function App() {
   }
 
   return (
-    <LinearGradient colors={colors.background} style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.safeArea}>
-        {['reveal', 'game', 'voting', 'result'].includes(gameState) && (
-          <BackButton onPress={onRestart} />
-        )}
-        {gameState === 'setup' && currentScreen === 'setup' && (
-          <SetupScreen
-            players={playersList}
-            setPlayers={setPlayersList}
-            impostorCount={impostorCount}
-            setImpostorCount={setImpostorCount}
-            onStart={startGame}
-            onNavigateToAddWord={navigateToAddWord}
-            onNavigateToPlayers={navigateToPlayers}
-            onNavigateToGameMode={navigateToGameMode}
-            onNavigateToCategories={navigateToCategories}
+    <SafeAreaProvider>
+      <LinearGradient colors={colors.background} style={styles.container}>
+        <StatusBar barStyle="light-content" />
+        <SafeAreaView style={styles.safeArea}>
+          {['reveal', 'game', 'voting', 'result'].includes(gameState) && (
+            <BackButton onPress={onRestart} />
+          )}
+          {gameState === 'setup' && currentScreen === 'setup' && (
+            <SetupScreen
+              players={playersList}
+              setPlayers={setPlayersList}
+              impostorCount={impostorCount}
+              setImpostorCount={setImpostorCount}
+              onStart={startGame}
+              onNavigateToAddWord={navigateToAddWord}
+              onNavigateToPlayers={navigateToPlayers}
+              onNavigateToGameMode={navigateToGameMode}
+              onNavigateToCategories={navigateToCategories}
+            />
+          )}
+
+          {gameState === 'setup' && currentScreen === 'add-word' && (
+            <AddWordScreen
+                onAddWord={handleAddWord}
+                onBack={navigateToSetup}
+            />
+          )}
+
+          {gameState === 'setup' && currentScreen === 'players' && (
+            <PlayersScreen
+              players={playersList}
+              setPlayers={setPlayersList}
+              onBack={navigateBackToSetup}
+            />
+          )}
+
+          {gameState === 'setup' && currentScreen === 'settingsOption' && settingsOption && (
+            <SettingsOptionScreen
+              title={
+                settingsOption === 'gameMode' ? 'Tryb gry' :
+                settingsOption === 'categories' ? 'Kategorie' :
+                typeof settingsOption === 'string' && settingsOption !== 'gameMode' && settingsOption !== 'categories' ? settingsOption :
+                'Ustawienia'
+              }
+              onBack={navigateBackToSettings}
+            />
+          )}
+
+          {gameState === 'reveal' && (
+            <RevealScreen
+              playerName={gameData.players[gameData.currentPlayerIndex]?.name || ''}
+              role={gameData.players[gameData.currentPlayerIndex]?.role || ''}
+              secretWord={gameData.secretWord}
+              category={gameData.category}
+              impostorHint={gameData.impostorHint}
+              onNext={nextPlayer}
+            />
+          )}
+
+          {gameState === 'game' && (
+            <GameScreen
+              category={gameData.category}
+              starter={gameData.startingPlayerName}
+              onVote={onVote}
+            />
+          )}
+
+          {gameState === 'voting' && (
+            <VotingScreen
+              players={gameData.players.filter(p => !p.isEliminated)}
+              onVotePlayer={handleVote}
+            />
+          )}
+
+          {gameState === 'result' && winner && (
+            <ResultScreen
+              winner={winner}
+              secretWord={gameData.secretWord}
+              wordId={gameData.wordId}
+              onDeleteWord={handleDeleteWord}
+              onRestart={onRestart}
+            />
+          )}
+
+          <InfoCard
+            visible={infoCardVisible}
+            title={infoCardData.title}
+            message={infoCardData.message}
+            type={infoCardData.type}
+            onOkPress={() => setInfoCardVisible(false)}
           />
-        )}
 
-        {gameState === 'setup' && currentScreen === 'add-word' && (
-           <AddWordScreen
-              onAddWord={handleAddWord}
-              onBack={navigateToSetup}
-           />
-        )}
-
-        {gameState === 'setup' && currentScreen === 'players' && (
-          <PlayersScreen
-            players={playersList}
-            setPlayers={setPlayersList}
-            onBack={navigateBackToSetup}
+          <VotingRevealCard
+            visible={revealCardVisible}
+            player={revealedPlayer}
+            onOkPress={() => {
+              setRevealCardVisible(false);
+              setGameState('game');
+            }}
           />
-        )}
-
-        {gameState === 'setup' && currentScreen === 'settingsOption' && settingsOption && (
-          <SettingsOptionScreen
-            title={
-              settingsOption === 'gameMode' ? 'Tryb gry' :
-              settingsOption === 'categories' ? 'Kategorie' :
-              typeof settingsOption === 'string' && settingsOption !== 'gameMode' && settingsOption !== 'categories' ? settingsOption :
-              'Ustawienia'
-            }
-            onBack={navigateBackToSettings}
-          />
-        )}
-
-        {gameState === 'reveal' && (
-          <RevealScreen
-            playerName={gameData.players[gameData.currentPlayerIndex]?.name || ''}
-            role={gameData.players[gameData.currentPlayerIndex]?.role || ''}
-            secretWord={gameData.secretWord}
-            category={gameData.category}
-            impostorHint={gameData.impostorHint}
-            onNext={nextPlayer}
-          />
-        )}
-
-        {gameState === 'game' && (
-          <GameScreen
-            category={gameData.category}
-            starter={gameData.startingPlayerName}
-            onVote={onVote}
-          />
-        )}
-
-        {gameState === 'voting' && (
-          <VotingScreen
-            players={gameData.players.filter(p => !p.isEliminated)}
-            onVotePlayer={handleVote}
-          />
-        )}
-
-        {gameState === 'result' && winner && (
-          <ResultScreen
-            winner={winner}
-            secretWord={gameData.secretWord}
-            wordId={gameData.wordId}
-            onDeleteWord={handleDeleteWord}
-            onRestart={onRestart}
-          />
-        )}
-
-        <InfoCard
-          visible={infoCardVisible}
-          title={infoCardData.title}
-          message={infoCardData.message}
-          type={infoCardData.type}
-          onOkPress={() => setInfoCardVisible(false)}
-        />
-
-        <VotingRevealCard
-          visible={revealCardVisible}
-          player={revealedPlayer}
-          onOkPress={() => {
-            setRevealCardVisible(false);
-            setGameState('game');
-          }}
-        />
-      </SafeAreaView>
-    </LinearGradient>
+        </SafeAreaView>
+      </LinearGradient>
+    </SafeAreaProvider>
   );
 }
 
